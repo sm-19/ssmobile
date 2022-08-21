@@ -8,7 +8,7 @@ class splash extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-          backgroundColor: Color.fromARGB(255, 47, 110, 146),
+          backgroundColor: Color.fromARGB(255, 255, 255, 255),
           body: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -39,7 +39,7 @@ class splash extends StatelessWidget {
                   const Text(
                     "School",
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Color.fromARGB(255, 175, 57, 57),
                       fontWeight: FontWeight.bold,
                       fontSize: 30.0,
                     ),

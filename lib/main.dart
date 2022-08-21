@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
           } else {
             return GetMaterialApp(
               debugShowCheckedModeBanner: false,
-              initialRoute: Routes.AKSES,
+              initialRoute: Routes.LOGIN,
               getPages: AppPages.routes,
             );
           }

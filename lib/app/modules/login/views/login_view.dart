@@ -31,7 +31,7 @@ class _LoginViewState extends State<LoginListState> {
             TextSpan(
               text: 'School',
               style: TextStyle(
-                  color: Color.fromARGB(255, 255, 255, 255), fontSize: 30),
+                  color: Color.fromARGB(255, 179, 83, 83), fontSize: 30),
             ),
           ]),
     );
@@ -48,16 +48,16 @@ class _LoginViewState extends State<LoginListState> {
             style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
-                color: Color.fromARGB(255, 255, 255, 255)),
+                color: Color.fromARGB(255, 0, 0, 0)),
           ),
           SizedBox(
-            height: 10,
+            height: 2,
           ),
           TextField(
               obscureText: isPassword,
               decoration: InputDecoration(
                   border: InputBorder.none,
-                  fillColor: Color.fromARGB(255, 255, 255, 255),
+                  fillColor: Color.fromARGB(36, 0, 174, 255),
                   filled: true))
         ],
       ),
@@ -111,7 +111,7 @@ class _LoginViewState extends State<LoginListState> {
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
     return Scaffold(
-        backgroundColor: Color.fromARGB(255, 47, 110, 146),
+        backgroundColor: Color.fromARGB(255, 255, 255, 255),
         body: Container(
           height: height,
           child: Stack(

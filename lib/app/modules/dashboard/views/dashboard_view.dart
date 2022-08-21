@@ -1,4 +1,5 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:smartschool/app/modules/jadwal/views/jadwal_view.dart';
@@ -37,10 +38,43 @@ class _MyHomePageState extends State<MyHomePage> {
     return result;
   }
 
+  var response;
+  Dio dio = Dio();
+  bool error = false;
+  bool loading = false;
+  String errmsg = "";
+  var apidata;
+  @override
+  void initState() {
+    getData();
+    super.initState();
+  }
+
+  getData() async {
+    setState(() {
+      loading = true;
+    });
+    String url = "https://www.sekolahpintar.my.id/Api/api/pengumuman";
+    var response = await dio.get(url);
+    apidata = response.data;
+
+    if (response.statusCode == 200) {
+      if (apidata == "error") {
+        error = true;
+        errmsg = apidata["msg"];
+      }
+    } else {
+      error = true;
+      errmsg = "Error while fetching data.";
+    }
+    loading = false;
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 47, 110, 146),
+      backgroundColor: Color.fromARGB(255, 255, 255, 255),
       body: SafeArea(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -54,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   Text("Dashboard",
                       style: new TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 255, 255, 255),
+                          color: Color.fromARGB(255, 0, 0, 0),
                           fontSize: 25)),
                   Image.asset(
                     "assets/gambar/Logout.png",
@@ -69,10 +103,10 @@ class _MyHomePageState extends State<MyHomePage> {
               padding: EdgeInsets.all(10),
               child: Text("Hy, Dimas Prasedy",
                   style: new TextStyle(
-                      color: Color.fromARGB(255, 255, 255, 255), fontSize: 20)),
+                      color: Color.fromARGB(255, 0, 0, 0), fontSize: 20)),
             ),
             SizedBox(
-              height: 20,
+              height: 10,
             ),
             CarouselSlider(
               options: CarouselOptions(
@@ -103,35 +137,41 @@ class _MyHomePageState extends State<MyHomePage> {
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(5),
                       color: _currentIndex == index
-                          ? Color.fromARGB(255, 81, 222, 250)
-                          : Color.fromARGB(255, 255, 255, 255)),
+                          ? Color.fromARGB(255, 48, 145, 164)
+                          : Color.fromARGB(255, 112, 112, 112)),
                 );
               }),
             ),
             SizedBox(
-              height: 20,
+              height: 10,
             ),
             Expanded(
                 child: GridView.count(
-              padding: EdgeInsets.all(5),
+              padding: EdgeInsets.only(left: 20, right: 20),
               crossAxisCount: 5,
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
               children: <Widget>[
                 MyMenu(
-                  title: "Pelajaran",
-                  icon: Icons.file_open,
-                ),
+                    title: "Pelajaran",
+                    icon: Icons.file_open,
+                    color: Color(0x99BD7533)),
                 MyMenu(
-                  title: "Jadwal",
-                  icon: Icons.calendar_today,
-                ),
-                MyMenu(title: "Ujian", icon: Icons.file_present),
-                MyMenu(title: "Nilai", icon: Icons.score),
+                    title: "Jadwal",
+                    icon: Icons.calendar_today,
+                    color: Color(0x999DAD3A)),
                 MyMenu(
-                  title: "Profil",
-                  icon: Icons.person,
-                )
+                    title: "Ujian",
+                    icon: Icons.file_present,
+                    color: Color(0x99C04040)),
+                MyMenu(
+                    title: "Nilai",
+                    icon: Icons.score,
+                    color: Color(0x99915FA3)),
+                MyMenu(
+                    title: "Profil",
+                    icon: Icons.person,
+                    color: Color(0x99295167))
               ],
             )),
             Container(
@@ -142,15 +182,62 @@ class _MyHomePageState extends State<MyHomePage> {
                   Text("Pegumuman",
                       style: new TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 255, 255, 255),
-                          fontSize: 18)),
+                          color: Color.fromARGB(255, 0, 0, 0),
+                          fontSize: 16)),
                   Text("Lihat Semua",
                       style: new TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 250, 253, 58),
+                          color: Color.fromARGB(255, 213, 193, 11),
                           fontSize: 15)),
                 ],
               ),
+            ),
+            Expanded(
+              child: Container(
+                  alignment: Alignment.center,
+                  child: loading
+                      ? CircularProgressIndicator()
+                      : error
+                          ? Text("Error: $errmsg")
+                          : ListView(
+                              //if everything fine, show the JSON as widget
+                              children:
+                                  apidata['data'].map<Widget>((pengumuman) {
+                                return InkWell(
+                                  child: Card(
+                                      margin: EdgeInsets.only(
+                                          left: 10, right: 10, bottom: 5),
+                                      color: Color.fromARGB(255, 172, 230, 225),
+                                      child: Container(
+                                        margin: EdgeInsets.all(10),
+                                        child: Row(
+                                          children: [
+                                            Image.asset(
+                                              "assets/gambar/pengumuman.png",
+                                              width: 50.0,
+                                              height: 50.0,
+                                              fit: BoxFit.contain,
+                                            ),
+                                            SizedBox(width: 10),
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  pengumuman['judul'],
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                Text(pengumuman['detail']),
+                                              ],
+                                            )
+                                          ],
+                                        ),
+                                      )),
+                                );
+                              }).toList(),
+                            )),
             ),
           ],
         ),
@@ -169,7 +256,7 @@ class ItemCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Color.fromARGB(255, 120, 230, 252),
+            color: Color.fromARGB(255, 162, 218, 255),
             blurRadius: 4,
           )
         ],
@@ -180,13 +267,15 @@ class ItemCard extends StatelessWidget {
 }
 
 class MyMenu extends StatelessWidget {
-  MyMenu({required this.title, required this.icon});
+  MyMenu({required this.title, required this.icon, required this.color});
   final String title;
   final IconData icon;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: color,
       child: InkWell(
         child: Center(
             child: Column(
@@ -198,7 +287,8 @@ class MyMenu extends StatelessWidget {
             ),
             Text(
               title,
-              style: new TextStyle(fontSize: 12.0),
+              style: new TextStyle(
+                  fontSize: 12.0, color: Color.fromARGB(255, 255, 255, 255)),
             )
           ],
         )),
