@@ -8,6 +8,8 @@ import '../modules/dashboard/bindings/dashboard_binding.dart';
 import '../modules/dashboard/views/dashboard_view.dart';
 import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
+import '../modules/informasi/bindings/informasi_binding.dart';
+import '../modules/informasi/views/informasi_view.dart';
 import '../modules/jadwal/bindings/jadwal_binding.dart';
 import '../modules/jadwal/views/jadwal_view.dart';
 import '../modules/login/bindings/login_binding.dart';
@@ -66,6 +68,11 @@ class AppPages {
       name: _Paths.ABSENSI,
       page: () => const AbsensiView(),
       binding: AbsensiBinding(),
+    ),
+    GetPage(
+      name: _Paths.INFORMASI,
+      page: () => const InformasiView(),
+      binding: InformasiBinding(),
     ),
   ];
 }

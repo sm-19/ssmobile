@@ -2,6 +2,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:smartschool/app/modules/informasi/views/informasi_view.dart';
 import 'package:smartschool/app/modules/jadwal/views/jadwal_view.dart';
 import 'package:smartschool/app/modules/matapelajaran/views/matapelajaran_view.dart';
 import '../controllers/dashboard_controller.dart';
@@ -145,35 +146,34 @@ class _MyHomePageState extends State<MyHomePage> {
             SizedBox(
               height: 10,
             ),
-            Expanded(
-                child: GridView.count(
-              padding: EdgeInsets.only(left: 20, right: 20),
-              crossAxisCount: 5,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              children: <Widget>[
-                MyMenu(
-                    title: "Pelajaran",
-                    icon: Icons.file_open,
-                    color: Color(0x99BD7533)),
-                MyMenu(
-                    title: "Jadwal",
-                    icon: Icons.calendar_today,
-                    color: Color(0x999DAD3A)),
-                MyMenu(
-                    title: "Ujian",
-                    icon: Icons.file_present,
-                    color: Color(0x99C04040)),
-                MyMenu(
-                    title: "Nilai",
-                    icon: Icons.score,
-                    color: Color(0x99915FA3)),
-                MyMenu(
-                    title: "Profil",
-                    icon: Icons.person,
-                    color: Color(0x99295167))
-              ],
-            )),
+            Container(
+              padding: EdgeInsets.only(left: 8, right: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  MyMenu(
+                      title: "Pelajaran",
+                      icon: Icons.file_open,
+                      color: Color(0x99BD7533)),
+                  MyMenu(
+                      title: "Jadwal",
+                      icon: Icons.calendar_today,
+                      color: Color(0x999DAD3A)),
+                  MyMenu(
+                      title: "Ujian",
+                      icon: Icons.file_present,
+                      color: Color(0x99C04040)),
+                  MyMenu(
+                      title: "Nilai",
+                      icon: Icons.score,
+                      color: Color(0x99915FA3)),
+                  MyMenu(
+                      title: "Profil",
+                      icon: Icons.person,
+                      color: Color(0x99295167))
+                ],
+              ),
+            ),
             Container(
               padding: EdgeInsets.all(10),
               child: Row(
@@ -184,11 +184,19 @@ class _MyHomePageState extends State<MyHomePage> {
                           fontWeight: FontWeight.bold,
                           color: Color.fromARGB(255, 0, 0, 0),
                           fontSize: 16)),
-                  Text("Lihat Semua",
-                      style: new TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 213, 193, 11),
-                          fontSize: 15)),
+                  InkWell(
+                    child: Text("Lihat Semua",
+                        style: new TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color.fromARGB(255, 213, 193, 11),
+                            fontSize: 15)),
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => InformasiView()));
+                    },
+                  ),
                 ],
               ),
             ),
@@ -204,38 +212,56 @@ class _MyHomePageState extends State<MyHomePage> {
                               children:
                                   apidata['data'].map<Widget>((pengumuman) {
                                 return InkWell(
-                                  child: Card(
-                                      margin: EdgeInsets.only(
-                                          left: 10, right: 10, bottom: 5),
-                                      color: Color.fromARGB(255, 172, 230, 225),
-                                      child: Container(
-                                        margin: EdgeInsets.all(10),
-                                        child: Row(
-                                          children: [
-                                            Image.asset(
-                                              "assets/gambar/pengumuman.png",
-                                              width: 50.0,
-                                              height: 50.0,
-                                              fit: BoxFit.contain,
-                                            ),
-                                            SizedBox(width: 10),
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  pengumuman['judul'],
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold),
+                                    child: Card(
+                                        margin: EdgeInsets.only(
+                                            left: 10, right: 10, bottom: 5),
+                                        color:
+                                            Color.fromARGB(255, 172, 230, 225),
+                                        child: Container(
+                                          margin: EdgeInsets.all(10),
+                                          child: Row(
+                                            children: [
+                                              Image.asset(
+                                                "assets/gambar/pengumuman.png",
+                                                width: 50.0,
+                                                height: 50.0,
+                                                fit: BoxFit.contain,
+                                              ),
+                                              SizedBox(width: 10),
+                                              Flexible(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      pengumuman['judul'],
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    Text(
+                                                      pengumuman['detail'],
+                                                      maxLines: 2,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ],
                                                 ),
-                                                Text(pengumuman['detail']),
-                                              ],
-                                            )
-                                          ],
-                                        ),
-                                      )),
-                                );
+                                              ),
+                                            ],
+                                          ),
+                                        )),
+                                    onTap: () {
+                                      var judul = pengumuman['judul'];
+                                      var isi = pengumuman['detail'];
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) =>
+                                            _buildAboutDialog(
+                                                context, judul, isi),
+                                      );
+                                      // Perform some action
+                                    });
                               }).toList(),
                             )),
             ),
@@ -244,6 +270,26 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
+}
+
+Widget _buildAboutDialog(BuildContext context, var judul, var isi) {
+  return new AlertDialog(
+    title: Text(judul),
+    content: new Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[Text(isi)],
+    ),
+    actions: <Widget>[
+      new FlatButton(
+        onPressed: () {
+          Navigator.of(context).pop();
+        },
+        textColor: Theme.of(context).primaryColor,
+        child: const Text('Ok'),
+      ),
+    ],
+  );
 }
 
 class ItemCard extends StatelessWidget {
@@ -277,21 +323,25 @@ class MyMenu extends StatelessWidget {
     return Card(
       color: color,
       child: InkWell(
-        child: Center(
-            child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Icon(
-              icon,
-              size: 30.0,
-            ),
-            Text(
-              title,
-              style: new TextStyle(
-                  fontSize: 12.0, color: Color.fromARGB(255, 255, 255, 255)),
-            )
-          ],
-        )),
+        child: Container(
+          height: 50,
+          width: 50,
+          child: Center(
+              child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Icon(
+                icon,
+                size: 30.0,
+              ),
+              Text(
+                title,
+                style: new TextStyle(
+                    fontSize: 12.0, color: Color.fromARGB(255, 255, 255, 255)),
+              )
+            ],
+          )),
+        ),
         onTap: () {
           if (title == "Pelajaran") {
             Navigator.push(context,

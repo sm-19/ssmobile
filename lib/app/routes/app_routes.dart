@@ -11,6 +11,7 @@ abstract class Routes {
   static const MATAPELAJARAN = _Paths.MATAPELAJARAN;
   static const JADWAL = _Paths.JADWAL;
   static const ABSENSI = _Paths.ABSENSI;
+  static const INFORMASI = _Paths.INFORMASI;
 }
 
 abstract class _Paths {
@@ -23,4 +24,5 @@ abstract class _Paths {
   static const MATAPELAJARAN = '/matapelajaran';
   static const JADWAL = '/jadwal';
   static const ABSENSI = '/absensi';
+  static const INFORMASI = '/informasi';
 }
