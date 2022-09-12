@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smartschool/app/modules/home/views/home_view.dart';
 import '../controllers/matapelajaran_controller.dart';
 import 'package:dio/dio.dart';
@@ -17,13 +18,47 @@ class MapelListState extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MapelListState> {
-  var response;
   Dio dio = Dio();
-
+  var pelajaran, datapelajaran;
+  var response;
+  var kodekelas, idlogin;
   bool error = false; //for error status
   bool loading = false; //for data featching status
   String errmsg = ""; //to assing any error message from API/runtime
   var apidata; //for decoded JSON data
+
+  getData() async {
+    setState(() {
+      loading = true; //make loading true to show progressindicator
+    });
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    String url =
+        "https://www.tampilan.sekolahpintar.my.id/Api/api/jadwal_pelajaran";
+    response = await dio.get(url);
+    apidata = response.data;
+    idlogin = pref.getString('idlogin');
+    kodekelas = pref.getString("kelas");
+    if (pref.getString("login") == 'siswa') {
+      datapelajaran =
+          apidata['data'].where((o) => o['kode_kelas'] == kodekelas).toList();
+    }
+    if (pref.getString("login") == 'guru') {
+      datapelajaran =
+          apidata['data'].where((o) => o['id_guru'] == idlogin).toList();
+    }
+    loading = false;
+    setState(() {});
+  }
+
+  void mapelSession(idmapel, namamapel, kelas, idkelas) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    await pref.setString("mapelid", idmapel);
+    await pref.setString("mapelnama", namamapel);
+    await pref.setString("kelas", kelas);
+    await pref.setString("idkelas", idkelas);
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => HomeView()));
+  }
 
   @override
   void initState() {
@@ -31,117 +66,143 @@ class _MyHomePageState extends State<MapelListState> {
     super.initState();
   }
 
-  getData() async {
-    setState(() {
-      loading = true; //make loading true to show progressindicator
-    });
-    String url = "https://www.sekolahpintar.my.id/Api/api/pelajaran";
-    var response = await dio.get(url);
-    apidata = response.data;
-    if (response.statusCode == 200) {
-      if (apidata == "error") {
-        error = true;
-        errmsg = apidata["msg"];
-      }
-    } else {
-      error = true;
-      errmsg = "Error while fetching data.";
-    }
-    loading = false;
-    setState(() {});
+  @override
+  dispose() {
+    super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        backgroundColor: Color.fromARGB(255, 47, 110, 146),
+        backgroundColor: Color.fromARGB(255, 255, 255, 255),
         body: SafeArea(
           child: Column(
             children: [
-              Container(
-                alignment: Alignment.topLeft,
-                padding: EdgeInsets.all(10),
-                decoration: new BoxDecoration(
-                    color: Color.fromARGB(255, 255, 255, 255),
-                    borderRadius: new BorderRadius.only(
-                        bottomLeft: const Radius.circular(5),
-                        bottomRight: const Radius.circular(5))),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("MATA PELAJARAN",
-                        style: new TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color.fromARGB(255, 0, 0, 0),
-                            fontSize: 25)),
-                    Container(
-                      color: Color.fromARGB(255, 0, 0, 3),
-                      height: 1,
-                      margin: EdgeInsets.only(top: 5),
+              Stack(
+                children: [
+                  Container(
+                    height: 60,
+                    alignment: Alignment.topLeft,
+                    padding: EdgeInsets.all(10),
+                    decoration: new BoxDecoration(
+                        color: Color.fromARGB(255, 172, 43, 43),
+                        borderRadius: new BorderRadius.only(
+                            bottomLeft: const Radius.circular(15),
+                            bottomRight: const Radius.circular(15))),
+                  ),
+                  Container(
+                    padding: EdgeInsets.all(5),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [],
+                        ),
+                        Container(
+                          color: Color.fromARGB(255, 255, 255, 255),
+                          height: 2,
+                          margin: EdgeInsets.only(top: 10),
+                        ),
+                        Container(
+                          margin: EdgeInsets.only(top: 10),
+                          padding: EdgeInsets.all(20),
+                          width: 300,
+                          decoration: BoxDecoration(
+                            color: Color.fromARGB(255, 255, 255, 255),
+                            borderRadius: BorderRadius.circular(5),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Color.fromARGB(179, 224, 119, 119),
+                                blurRadius: 1,
+                              )
+                            ],
+                          ),
+                          child: Text(
+                            "Mata Pelajaran",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Color.fromARGB(255, 172, 43, 43)),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: 10,
+                  )
+                ],
               ),
               Expanded(
-                  child: Container(
-                      alignment: Alignment.center,
-                      child: loading
-                          ? CircularProgressIndicator()
-                          : error
-                              ? Text("Error: $errmsg")
-                              : ListView(
-                                  //if everything fine, show the JSON as widget
-                                  children:
-                                      apidata["data"].map<Widget>((mapel) {
-                                    return InkWell(
+                child: Container(
+                    alignment: Alignment.center,
+                    child: loading
+                        ? CircularProgressIndicator()
+                        : error
+                            ? Text("Error: $errmsg")
+                            : ListView(
+                                //if everything fine, show the JSON as widget
+                                children: datapelajaran.map<Widget>((mapel) {
+                                  return InkWell(
                                       child: Card(
+                                          shape: RoundedRectangleBorder(
+                                            side: BorderSide(
+                                              color: Color.fromARGB(
+                                                  113, 203, 78, 78),
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                                10.0), //<-- SEE HERE
+                                          ),
                                           margin: EdgeInsets.only(
                                               left: 10, right: 10, bottom: 5),
-                                          color: Color.fromARGB(
-                                              255, 255, 255, 255),
                                           child: Container(
-                                            alignment: Alignment.topLeft,
                                             margin: EdgeInsets.all(10),
-                                            child: DefaultTextStyle(
-                                              style: TextStyle(
-                                                  color: Color.fromARGB(
-                                                      255, 8, 100, 157),
-                                                  fontSize: 20),
-                                              child: Column(children: [
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      mapel['pelajaran'],
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    Text(
-                                                      mapel['nama_pelajaran'],
-                                                    )
-                                                  ],
-                                                )
-                                              ]),
+                                            child: Row(
+                                              children: [
+                                                Image.asset(
+                                                  "assets/gambar/Study.png",
+                                                  width: 50.0,
+                                                  height: 50.0,
+                                                  fit: BoxFit.contain,
+                                                ),
+                                                SizedBox(width: 10),
+                                                Flexible(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        mapel['pelajaran'],
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                      Text(
+                                                        mapel['nama_pelajaran'],
+                                                        maxLines: 2,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           )),
                                       onTap: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) => HomeView(
-                                                    mapel: mapel[
-                                                        'nama_pelajaran'])));
-                                      },
-                                    );
-                                  }).toList(),
-                                ))),
+                                        mapelSession(
+                                            mapel['id_pelajaran'],
+                                            mapel['nama_pelajaran'],
+                                            mapel['kode_kelas'],
+                                            mapel['id_kelas']);
+                                      });
+                                }).toList(),
+                              )),
+              ),
             ],
           ),
         ),

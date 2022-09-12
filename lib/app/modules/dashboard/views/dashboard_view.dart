@@ -1,10 +1,17 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smartschool/app/modules/informasi/views/informasi_view.dart';
 import 'package:smartschool/app/modules/jadwal/views/jadwal_view.dart';
+import 'package:smartschool/app/modules/login/views/login_view.dart';
 import 'package:smartschool/app/modules/matapelajaran/views/matapelajaran_view.dart';
+import 'package:smartschool/app/modules/profil/views/profil_view.dart';
+import 'package:smartschool/app/modules/raport/views/raport_view.dart';
+import 'package:smartschool/app/modules/ujian/views/ujian_view.dart';
 import '../controllers/dashboard_controller.dart';
 
 class Dashboard extends GetView<DashboardController> {
@@ -21,7 +28,46 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String NISN = "";
+  String namasiswa = "";
+
+  getPref() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    var islogin = pref.getString("login");
+    if (islogin != null) {
+      setState(() {
+        NISN = pref.getString("nisn")!;
+        namasiswa = pref.getString("nama")!;
+      });
+    } else {
+      Navigator.of(context, rootNavigator: true).pop();
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (BuildContext context) => const LoginView(),
+        ),
+        (route) => false,
+      );
+    }
+  }
+
+  logOut() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    setState(() {
+      preferences.remove("login");
+    });
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (BuildContext context) => const LoginView(),
+      ),
+      (route) => false,
+    );
+  }
+
   int _currentIndex = 0;
+
   List cardList = [
     'assets/foto/1.png',
     'assets/foto/2.jpg',
@@ -48,6 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     getData();
+    getPref();
     super.initState();
   }
 
@@ -55,7 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       loading = true;
     });
-    String url = "https://www.sekolahpintar.my.id/Api/api/pengumuman";
+    String url = "https://www.tampilan.sekolahpintar.my.id/Api/api/pengumuman";
     var response = await dio.get(url);
     apidata = response.data;
 
@@ -69,7 +116,11 @@ class _MyHomePageState extends State<MyHomePage> {
       errmsg = "Error while fetching data.";
     }
     loading = false;
-    setState(() {});
+  }
+
+  @override
+  dispose() {
+    super.dispose();
   }
 
   @override
@@ -82,29 +133,73 @@ class _MyHomePageState extends State<MyHomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Container(
-              padding: EdgeInsets.all(10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              padding: EdgeInsets.only(top: 10, left: 5, right: 5, bottom: 10),
+              decoration: BoxDecoration(
+                  color: Color.fromARGB(255, 255, 255, 255),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color.fromARGB(93, 0, 0, 0),
+                      blurRadius: 2,
+                    )
+                  ],
+                  borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(15),
+                      bottomRight: Radius.circular(15))),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Dashboard",
-                      style: new TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Color.fromARGB(255, 0, 0, 0),
-                          fontSize: 25)),
-                  Image.asset(
-                    "assets/gambar/Logout.png",
-                    width: 24,
-                    height: 24,
-                    alignment: Alignment.topRight,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Dashboard",
+                          style: new TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color.fromARGB(255, 0, 0, 0),
+                              fontSize: 25)),
+                      Container(
+                        child: InkWell(
+                          onTap: () {
+                            logOut();
+                          },
+                          child: Icon(
+                            Icons.logout_sharp,
+                            color: Color.fromARGB(255, 216, 88, 88),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    margin: EdgeInsets.only(top: 5, bottom: 5),
+                    height: 1,
+                    color: Color.fromARGB(66, 0, 0, 0),
+                  ),
+                  Container(
+                    margin: EdgeInsets.only(top: 5, bottom: 5),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text("Hello, ",
+                                style: new TextStyle(
+                                    color: Color.fromARGB(255, 0, 0, 0))),
+                            Icon(
+                              Icons.emoji_emotions_sharp,
+                              color: Color.fromARGB(255, 226, 205, 98),
+                            )
+                          ],
+                        ),
+                        Text(namasiswa,
+                            style: new TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: Color.fromARGB(255, 0, 0, 0))),
+                      ],
+                    ),
                   ),
                 ],
               ),
-            ),
-            Container(
-              padding: EdgeInsets.all(10),
-              child: Text("Hy, Dimas Prasedy",
-                  style: new TextStyle(
-                      color: Color.fromARGB(255, 0, 0, 0), fontSize: 20)),
             ),
             SizedBox(
               height: 10,
@@ -147,35 +242,46 @@ class _MyHomePageState extends State<MyHomePage> {
               height: 10,
             ),
             Container(
+              margin: EdgeInsets.only(left: 5, right: 5),
               padding: EdgeInsets.only(left: 8, right: 8),
+              decoration: BoxDecoration(
+                color: Color.fromARGB(255, 255, 255, 255),
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color.fromARGB(49, 0, 0, 0),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   MyMenu(
                       title: "Pelajaran",
-                      icon: Icons.file_open,
-                      color: Color(0x99BD7533)),
+                      icon: Icons.layers,
+                      color: Color.fromARGB(255, 189, 118, 51)),
                   MyMenu(
                       title: "Jadwal",
-                      icon: Icons.calendar_today,
-                      color: Color(0x999DAD3A)),
+                      icon: Icons.event_note,
+                      color: Color.fromARGB(255, 158, 173, 58)),
                   MyMenu(
                       title: "Ujian",
-                      icon: Icons.file_present,
-                      color: Color(0x99C04040)),
+                      icon: Icons.assignment,
+                      color: Color.fromARGB(255, 192, 64, 64)),
                   MyMenu(
-                      title: "Nilai",
-                      icon: Icons.score,
-                      color: Color(0x99915FA3)),
+                      title: "Raport",
+                      icon: Icons.poll,
+                      color: Color.fromARGB(255, 145, 95, 163)),
                   MyMenu(
                       title: "Profil",
                       icon: Icons.person,
-                      color: Color(0x99295167))
+                      color: Color.fromARGB(255, 41, 81, 103))
                 ],
               ),
             ),
             Container(
-              padding: EdgeInsets.all(10),
+              padding: EdgeInsets.all(5),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -212,45 +318,53 @@ class _MyHomePageState extends State<MyHomePage> {
                               children:
                                   apidata['data'].map<Widget>((pengumuman) {
                                 return InkWell(
-                                    child: Card(
-                                        margin: EdgeInsets.only(
-                                            left: 10, right: 10, bottom: 5),
-                                        color:
-                                            Color.fromARGB(255, 172, 230, 225),
-                                        child: Container(
-                                          margin: EdgeInsets.all(10),
-                                          child: Row(
-                                            children: [
-                                              Image.asset(
-                                                "assets/gambar/pengumuman.png",
-                                                width: 50.0,
-                                                height: 50.0,
-                                                fit: BoxFit.contain,
-                                              ),
-                                              SizedBox(width: 10),
-                                              Flexible(
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      pengumuman['judul'],
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    Text(
-                                                      pengumuman['detail'],
-                                                      maxLines: 2,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                          color: Color.fromARGB(
+                                              255, 255, 255, 255),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Color.fromARGB(
+                                                  255, 64, 139, 176),
+                                              blurRadius: 1,
+                                            )
+                                          ],
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(5))),
+                                      padding: EdgeInsets.all(10),
+                                      margin: EdgeInsets.all(5),
+                                      child: Row(
+                                        children: [
+                                          Image.asset(
+                                            "assets/gambar/pengumuman.png",
+                                            width: 50.0,
+                                            height: 50.0,
+                                            fit: BoxFit.contain,
                                           ),
-                                        )),
+                                          SizedBox(width: 10),
+                                          Flexible(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  pengumuman['judul'],
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                Text(
+                                                  pengumuman['detail'],
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                     onTap: () {
                                       var judul = pengumuman['judul'];
                                       var isi = pengumuman['detail'];
@@ -275,9 +389,7 @@ class _MyHomePageState extends State<MyHomePage> {
 Widget _buildAboutDialog(BuildContext context, var judul, var isi) {
   return new AlertDialog(
     title: Text(judul),
-    content: new Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
+    content: new ListView(
       children: <Widget>[Text(isi)],
     ),
     actions: <Widget>[
@@ -302,7 +414,7 @@ class ItemCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Color.fromARGB(255, 162, 218, 255),
+            color: Color.fromARGB(179, 224, 119, 119),
             blurRadius: 4,
           )
         ],
@@ -313,31 +425,29 @@ class ItemCard extends StatelessWidget {
 }
 
 class MyMenu extends StatelessWidget {
-  MyMenu({required this.title, required this.icon, required this.color});
+  MyMenu({required this.title, required this.color, required this.icon});
   final String title;
   final IconData icon;
   final Color color;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: color,
+    return Container(
       child: InkWell(
         child: Container(
-          height: 50,
-          width: 50,
+          width: 60,
+          height: 60,
           child: Center(
               child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Icon(
                 icon,
-                size: 30.0,
+                color: color,
               ),
               Text(
                 title,
-                style: new TextStyle(
-                    fontSize: 12.0, color: Color.fromARGB(255, 255, 255, 255)),
+                style: new TextStyle(fontSize: 12.0, color: color),
               )
             ],
           )),
@@ -350,6 +460,18 @@ class MyMenu extends StatelessWidget {
           if (title == "Jadwal") {
             Navigator.push(
                 context, MaterialPageRoute(builder: (context) => JadwalView()));
+          }
+          if (title == "Ujian") {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => UjianView()));
+          }
+          if (title == "Raport") {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => RaportView()));
+          }
+          if (title == "Profil") {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => ProfilView()));
           }
         },
       ),
